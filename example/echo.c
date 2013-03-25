@@ -5,9 +5,7 @@
 #include "../ae.c"
 #include "../anet.c"
 
-aeEventLoop *loop;
-
-void readFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
+void readFromClient(aeEventLoop *loop, int fd, void *privdata, int mask) {
     int buffer_size = 1024;
     char buffer[1024];
     int size;
@@ -15,7 +13,7 @@ void readFromClient(aeEventLoop *el, int fd, void *privdata, int mask) {
     write(fd, buffer, size);
 }
 
-void acceptTcpHandler(aeEventLoop *el, int fd, void *privdata, int mask) {
+void acceptTcpHandler(aeEventLoop *loop, int fd, void *privdata, int mask) {
     int client_port, client_fd;
     char client_ip[128];
     // create client socket
@@ -40,6 +38,7 @@ int main()
     assert(ipfd != ANET_ERR);
 
     // create main event loop
+    aeEventLoop *loop;
     loop = aeCreateEventLoop();
 
     // regist socket connect callback
