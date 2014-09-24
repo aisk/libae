@@ -9,7 +9,7 @@ Redis's async event library, you can use it in your projects.
 * `ev_port`
 * `select`
 
-## Sample
+## Example
 
 Print `Hello, World` on screen every 10 seconds:
 
