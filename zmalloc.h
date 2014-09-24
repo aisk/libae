@@ -5,5 +5,7 @@
 
 #define zfree free
 
+#define zrealloc realloc
+
 #endif /* _ZMALLOC_H */
 

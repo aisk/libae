@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
-#include "../ae.c"
+#include "../ae.h"
 
 int print(struct aeEventLoop *loop, long long id, void *clientData)
 
@@ -12,8 +13,7 @@ int print(struct aeEventLoop *loop, long long id, void *clientData)
 
 int main(void)
 {
-    printf("we are using %s\n", aeApiName());
-    aeEventLoop *loop = aeCreateEventLoop();
+    aeEventLoop *loop = aeCreateEventLoop(10);
     int i;
     for (i=0;i<10;i++) {
         aeCreateTimeEvent(loop, i*1000, print, NULL, NULL);
