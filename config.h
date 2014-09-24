@@ -30,6 +30,9 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 /* Test for polling API */
 #ifdef __linux__
