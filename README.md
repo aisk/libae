@@ -88,3 +88,5 @@ int main()
     return 0;
 }
 ```
+
+[original document](http://redis.io/topics/internals-rediseventlib)
