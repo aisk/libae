@@ -2,6 +2,23 @@
     "name": "libae",
     "version": "0.0.2",
     "repo": "aisk/libae",
-    "keywords": ["async", "eventloop", "redis", "net"],
-    "src": ["anet.c", "anet.h", "ae.c", "ae.h", "ae_epoll.c", "ae_evport.c", "ae_kqueue.c", "ae_select.c", "config.h", "fmacros.h", "zmalloc.h"]
+    "keywords": [
+        "async",
+        "eventloop",
+        "redis",
+        "net"
+    ],
+    "src": [
+        "anet.c",
+        "anet.h",
+        "ae.c",
+        "ae.h",
+        "ae_epoll.c",
+        "ae_evport.c",
+        "ae_kqueue.c",
+        "ae_select.c",
+        "config.h",
+        "fmacros.h",
+        "zmalloc.h"
+    ]
 }
