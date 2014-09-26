@@ -3,5 +3,5 @@
     "version": "0.0.2",
     "repo": "aisk/libae",
     "keywords": ["async", "eventloop", "redis", "net"],
-    "src": ["anet.c", "anet.h", "ae.c", "ae.h", "ea_epoll.c", "ev_evport.c", "ae_kqueue.c", "ae_select.c", "config.h", "fmacros.h", "zmalloc.h"]
+    "src": ["anet.c", "anet.h", "ae.c", "ae.h", "ae_epoll.c", "ae_evport.c", "ae_kqueue.c", "ae_select.c", "config.h", "fmacros.h", "zmalloc.h"]
 }
