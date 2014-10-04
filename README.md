@@ -40,16 +40,26 @@ int main(void)
 Start an echo server on 8000:
 
 ```C
-void readFromClient(aeEventLoop *loop, int fd, void *privdata, int mask)
+void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
-    int buffer_size = 1024;
-    char buffer[1024];
-    int size;
-    size = read(fd, buffer, buffer_size);
-    write(fd, buffer, size);
+    char *buffer = clientdata;
+    printf("%p\n", clientdata);
+    write(fd, buffer, strlen(buffer));
+    free(buffer);
+    aeDeleteFileEvent(loop, fd, AE_WRITABLE);
 }
 
-void acceptTcpHandler(aeEventLoop *loop, int fd, void *privdata, int mask)
+void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
+{
+    int buffer_size = 1024;
+    char *buffer = malloc(sizeof(char) * buffer_size);
+    bzero(buffer, buffer_size);
+    int size;
+    size = read(fd, buffer, buffer_size);
+    aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
+}
+
+void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
     int client_port, client_fd;
     char client_ip[128];
@@ -75,7 +85,7 @@ int main()
 
     // create main event loop
     aeEventLoop *loop;
-    loop = aeCreateEventLoop(10);
+    loop = aeCreateEventLoop(1024);
 
     // regist socket connect callback
     int ret;
@@ -84,6 +94,9 @@ int main()
 
     // start main loop
     aeMain(loop);
+
+    // stop loop
+    aeDeleteEventLoop(loop);
 
     return 0;
 }
