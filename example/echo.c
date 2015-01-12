@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "../ae.h"
-#include "../anet.h"
+#include "../src/ae.h"
+#include "../src/anet.h"
 
 void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {

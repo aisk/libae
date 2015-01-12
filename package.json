@@ -1,6 +1,6 @@
 {
     "name": "libae",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "repo": "aisk/libae",
     "keywords": [
         "async",
@@ -9,16 +9,16 @@
         "net"
     ],
     "src": [
-        "anet.c",
-        "anet.h",
-        "ae.c",
-        "ae.h",
-        "ae_epoll.c",
-        "ae_evport.c",
-        "ae_kqueue.c",
-        "ae_select.c",
-        "config.h",
-        "fmacros.h",
-        "zmalloc.h"
+        "src/anet.c",
+        "src/anet.h",
+        "src/ae.c",
+        "src/ae.h",
+        "src/ae_epoll.c",
+        "src/ae_evport.c",
+        "src/ae_kqueue.c",
+        "src/ae_select.c",
+        "src/config.h",
+        "src/fmacros.h",
+        "src/zmalloc.h"
     ]
 }
