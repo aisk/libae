@@ -20,5 +20,6 @@
         "src/config.h",
         "src/fmacros.h",
         "src/zmalloc.h"
-    ]
+    ],
+    "makefile": "Makefile"
 }
