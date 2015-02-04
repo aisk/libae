@@ -10,7 +10,8 @@
 void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
     char *buffer = clientdata;
-    printf("%p\n", clientdata);
+    //printf("%p\n", clientdata);
+    printf("fd[%d] %s\n",fd, buffer);
     write(fd, buffer, strlen(buffer));
     free(buffer);
     aeDeleteFileEvent(loop, fd, AE_WRITABLE);
@@ -23,7 +24,39 @@ void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
     bzero(buffer, buffer_size);
     int size;
     size = read(fd, buffer, buffer_size);
-    aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
+    
+    if(size <0)
+    {
+        if(errno == EAGAIN || errno == EINTR)
+        {
+            // receive buffer is empty, or be interrupted
+            return;
+        }
+
+        aeDeleteFileEvent(loop,fd,AE_READABLE|AE_WRITABLE);
+        close(fd);
+
+        if (errno == ECONNRESET)
+        {
+            // RST
+            printf("fd[%d] counterpart send out RST\n",fd);
+        }
+        else
+        {
+            printf("fd[%d] unrecovable error\n",fd);
+        }
+    }
+    else if(size ==0 )
+    {
+        // client has closed, get a FIN
+        aeDeleteFileEvent(loop,fd,AE_READABLE|AE_WRITABLE);
+        close(fd);
+        printf("fd[%d] counterpart has shut off\n",fd);
+    }
+    else
+    {
+        aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
+    }
 }
 
 void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
