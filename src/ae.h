@@ -33,6 +33,8 @@
 #ifndef __AE_H__
 #define __AE_H__
 
+#include <sys/time.h>/* time_t */
+
 #define AE_OK 0
 #define AE_ERR -1
 

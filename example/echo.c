@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>/* bzero */
 #include <assert.h>
 #include <unistd.h>
 
