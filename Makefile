@@ -8,11 +8,11 @@ libae.a: $(OBJ)
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-timer: libae.a example/timer.o
-	$(CC) $^ -o $@
+timer: example/timer.o libae.a
+	$(CC) -o $@ $^
 
-echo: libae.a example/echo.o
-	$(CC) $^ -o $@
+echo: example/echo.o libae.a
+	$(CC) -o $@ $^
 
 clean:
 	rm -f $(OBJ) libae.a example/timer.o timer example/echo.o echo
