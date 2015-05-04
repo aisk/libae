@@ -1,6 +1,6 @@
 SRC = src/ae.c src/anet.c
 OBJ = ${SRC:.c=.o}
-CFLAGS = -std=c99 -g -O0 -Wno-parentheses -Wno-switch-enum -Wno-unused-value
+CFLAGS = -D_POSIX_SOURCE -std=c99 -g -O0 -Wno-parentheses -Wno-switch-enum -Wno-unused-value
 
 libae.a: $(OBJ)
 	$(AR) -rc $@ $(OBJ)
