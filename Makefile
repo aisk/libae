@@ -9,10 +9,10 @@ libae.a: $(OBJ)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 timer: example/timer.o libae.a
-	$(CC) -o $@ $^
+	$(CC) $^ -o $@
 
 echo: example/echo.o libae.a
-	$(CC) -o $@ $^
+	$(CC) $^ -o $@
 
 clean:
 	rm -f $(OBJ) libae.a example/timer.o timer example/echo.o echo
