@@ -13,7 +13,7 @@ void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
     printf("%p\n", clientdata);
     write(fd, buffer, strlen(buffer));
     free(buffer);
-    aeDeleteFileEvent(loop, fd, AE_WRITABLE);
+    aeDeleteFileEvent(loop, fd, mask);
 }
 
 void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
