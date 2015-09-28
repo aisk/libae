@@ -1,3 +1,5 @@
+chuqingq: fix `aisk/libae` for Ubuntu(12.04.1 LTS) env.
+
 # libae
 
 Redis's async event library, you can use it in your projects.
