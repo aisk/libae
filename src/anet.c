@@ -237,7 +237,7 @@ int anetResolveIP(char *err, char *host, char *ipbuf, size_t ipbuf_len) {
 
 static int anetSetReuseAddr(char *err, int fd) {
     int yes = 1;
-    /* Make sure connection-intensive things like the redis benckmark
+    /* Make sure connection-intensive things like the redis benchmark
      * will be able to close/open sockets a zillion of times */
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         anetSetError(err, "setsockopt SO_REUSEADDR: %s", strerror(errno));
@@ -380,8 +380,10 @@ int anetUnixGenericConnect(char *err, char *path, int flags)
     sa.sun_family = AF_LOCAL;
     strncpy(sa.sun_path,path,sizeof(sa.sun_path)-1);
     if (flags & ANET_CONNECT_NONBLOCK) {
-        if (anetNonBlock(err,s) != ANET_OK)
+        if (anetNonBlock(err,s) != ANET_OK) {
+            close(s);
             return ANET_ERR;
+        }
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) == -1) {
         if (errno == EINPROGRESS &&
@@ -409,7 +411,7 @@ int anetUnixNonBlockConnect(char *err, char *path)
  * (unless error or EOF condition is encountered) */
 int anetRead(int fd, char *buf, int count)
 {
-    int nread, totlen = 0;
+    ssize_t nread, totlen = 0;
     while(totlen != count) {
         nread = read(fd,buf,count-totlen);
         if (nread == 0) return totlen;
@@ -420,11 +422,11 @@ int anetRead(int fd, char *buf, int count)
     return totlen;
 }
 
-/* Like write(2) but make sure 'count' is read before to return
+/* Like write(2) but make sure 'count' is written before to return
  * (unless error is encountered) */
 int anetWrite(int fd, char *buf, int count)
 {
-    int nwritten, totlen = 0;
+    ssize_t nwritten, totlen = 0;
     while(totlen != count) {
         nwritten = write(fd,buf,count-totlen);
         if (nwritten == 0) return totlen;
@@ -462,7 +464,7 @@ static int anetV6Only(char *err, int s) {
 
 static int _anetTcpServer(char *err, int port, char *bindaddr, int af, int backlog)
 {
-    int s, rv;
+    int s = -1, rv;
     char _port[6];  /* strlen("65535") */
     struct addrinfo hints, *servinfo, *p;
 
@@ -482,15 +484,16 @@ static int _anetTcpServer(char *err, int port, char *bindaddr, int af, int backl
 
         if (af == AF_INET6 && anetV6Only(err,s) == ANET_ERR) goto error;
         if (anetSetReuseAddr(err,s) == ANET_ERR) goto error;
-        if (anetListen(err,s,p->ai_addr,p->ai_addrlen,backlog) == ANET_ERR) goto error;
+        if (anetListen(err,s,p->ai_addr,p->ai_addrlen,backlog) == ANET_ERR) s = ANET_ERR;
         goto end;
     }
     if (p == NULL) {
-        anetSetError(err, "unable to bind socket");
+        anetSetError(err, "unable to bind socket, errno: %d", errno);
         goto error;
     }
 
 error:
+    if (s != -1) close(s);
     s = ANET_ERR;
 end:
     freeaddrinfo(servinfo);
@@ -607,6 +610,23 @@ error:
     return -1;
 }
 
+/* Format an IP,port pair into something easy to parse. If IP is IPv6
+ * (matches for ":"), the ip is surrounded by []. IP and port are just
+ * separated by colons. This the standard to display addresses within Redis. */
+int anetFormatAddr(char *buf, size_t buf_len, char *ip, int port) {
+    return snprintf(buf,buf_len, strchr(ip,':') ?
+           "[%s]:%d" : "%s:%d", ip, port);
+}
+
+/* Like anetFormatAddr() but extract ip and port from the socket's peer. */
+int anetFormatPeer(int fd, char *buf, size_t buf_len) {
+    char ip[INET6_ADDRSTRLEN];
+    int port;
+
+    anetPeerToString(fd,ip,sizeof(ip),&port);
+    return anetFormatAddr(buf, buf_len, ip, port);
+}
+
 int anetSockName(int fd, char *ip, size_t ip_len, int *port) {
     struct sockaddr_storage sa;
     socklen_t salen = sizeof(sa);
@@ -627,4 +647,12 @@ int anetSockName(int fd, char *ip, size_t ip_len, int *port) {
         if (port) *port = ntohs(s->sin6_port);
     }
     return 0;
+}
+
+int anetFormatSock(int fd, char *fmt, size_t fmt_len) {
+    char ip[INET6_ADDRSTRLEN];
+    int port;
+
+    anetSockName(fd,ip,sizeof(ip),&port);
+    return anetFormatAddr(fmt, fmt_len, ip, port);
 }
