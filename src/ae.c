@@ -31,7 +31,6 @@
  */
 
 #include <stdio.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,8 +39,8 @@
 
 #ifdef _WIN32
   #include <sys/timeb.h>
-  #include "../../src/Win32_Interop/Win32_FDAPI.h"
-  #include "../../src/Win32_Interop/Win32_Service.h"
+  #include "Win32_Interop/Win32_FDAPI.h"
+  #include "Win32_Interop/Win32_Service.h"
 #else
   #include <sys/time.h>
   #include <unistd.h>
