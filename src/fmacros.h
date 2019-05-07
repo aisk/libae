@@ -58,4 +58,15 @@
 #define _LARGEFILE_SOURCE
 #define _FILE_OFFSET_BITS 64
 
+#ifdef _WIN32
+#define IF_WIN32(x, y) x
+#define WIN32_ONLY(x) x
+#define POSIX_ONLY(x)
+#define inline __inline
+#else
+#define IF_WIN32(x, y) y
+#define WIN32_ONLY(x)
+#define POSIX_ONLY(x) x
+#endif
+
 #endif
