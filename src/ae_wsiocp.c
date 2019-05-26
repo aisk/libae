@@ -22,9 +22,9 @@
 
 /* IOCP-based ae.c module  */
 
-#include "win32_Interop/win32fixes.h"
+#include "Win32_Interop/win32fixes.h"
+#include "Win32_Interop/win32_wsiocp.h"
 #include "adlist.h"
-#include "win32_Interop/win32_wsiocp.h"
 
 #define MAX_COMPLETE_PER_POLL   100
 #define MAX_SOCKET_LOOKUP       65535

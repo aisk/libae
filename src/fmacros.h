@@ -62,7 +62,13 @@
 #define IF_WIN32(x, y) x
 #define WIN32_ONLY(x) x
 #define POSIX_ONLY(x)
-#define inline __inline
+#ifndef ASSERT
+#ifdef _DEBUG
+#define ASSERT(condition)  do { if(!(condition)){ fprintf(stderr, "Assertion failed: %s @ %s::%s (%d)\n", #condition , __FILE__, __FUNCTION__, __LINE__); DebugBreak();} } while(0)
+#else
+#define ASSERT(condition) 
+#endif
+#endif
 #else
 #define IF_WIN32(x, y) y
 #define WIN32_ONLY(x)

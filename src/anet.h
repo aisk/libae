@@ -31,6 +31,7 @@
 #ifndef ANET_H
 #define ANET_H
 
+#include "fmacros.h"
 #include <sys/types.h>
 
 #define ANET_OK 0
@@ -47,6 +48,10 @@
 
 #ifdef _AIX
 #undef ip_len
+#endif
+
+#ifdef _WIN32
+#include "Win32_Interop/win32_types.h"
 #endif
 
 int anetTcpConnect(char *err, char *addr, int port);
