@@ -52,6 +52,7 @@
 
 #ifdef _WIN32
 #include "Win32_Interop/win32_types.h"
+#include "Win32_Interop/Win32_FDAPI.h"
 #endif
 
 int anetTcpConnect(char *err, char *addr, int port);
