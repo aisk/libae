@@ -16,6 +16,4 @@ echo:
 	@link $(LINK_FLAG) echo.obj $(LIBS) /OUT:echo.exe
 
 clean:
-	@del *.exe
-	@del *.obj
-	@del *.lib
+	@del *.exe *.obj *.lib *.ilk *.pdb
