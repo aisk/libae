@@ -25,10 +25,15 @@ void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
     memset(buffer, 0x00, sizeof(char) * buffer_size);
     int size;
     size = read(fd, buffer, buffer_size);
-		if(size > 0)
-			aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
-		else
-			aeDeleteFileEvent(loop, fd, mask);
+  
+    if (size <= 0)
+    {
+      printf("Client disconnected\n");
+      free(buffer);
+      aeDeleteFileEvent(loop, fd, AE_READABLE);
+      return; 
+    }
+    aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
 }
 
 void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
