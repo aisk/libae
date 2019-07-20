@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "../src/ae.h"
 #include "../src/anet.h"
@@ -10,7 +12,7 @@
 void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
     char *buffer = clientdata;
-    printf("%p\n", clientdata);
+    printf("%s\n", buffer);
     write(fd, buffer, strlen(buffer));
     free(buffer);
     aeDeleteFileEvent(loop, fd, mask);
@@ -20,10 +22,11 @@ void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
     int buffer_size = 1024;
     char *buffer = malloc(sizeof(char) * buffer_size);
-    bzero(buffer, buffer_size);
+    memset(buffer, 0x00, sizeof(char) * buffer_size);
     int size;
     size = read(fd, buffer, buffer_size);
-    if (size == 0)
+  
+    if (size <= 0)
     {
       printf("Client disconnected\n");
       free(buffer);
@@ -53,13 +56,13 @@ void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
 int main()
 {
     int ipfd;
+		 // create main event loop
+    aeEventLoop *loop;
+    loop = aeCreateEventLoop(1024);
+		
     // create server socket
     ipfd = anetTcpServer(NULL, 8000, "0.0.0.0", 0);
     assert(ipfd != ANET_ERR);
-
-    // create main event loop
-    aeEventLoop *loop;
-    loop = aeCreateEventLoop(1024);
 
     // regist socket connect callback
     int ret;
