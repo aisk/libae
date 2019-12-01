@@ -1,0 +1,15 @@
+version: '0.0.1'
+
+services:
+  libae:
+    build: .
+    ports: 
+      - 18000:8000
+
+networks:
+  network_mode: "bridge"
+
+volumes:
+  - /Users/yuxuebin/workspace/github/libae:/var/data/
+  
+command: ls /usr/src/myapp && ls /var/data/ && /usr/src/myapp/echo
