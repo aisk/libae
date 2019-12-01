@@ -12,7 +12,7 @@
 void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
 {
     char *buffer = clientdata;
-    printf("%s\n", buffer);
+    printf("recv client [%d] data: %s\n", fd, buffer);
     write(fd, buffer, strlen(buffer));
     free(buffer);
     aeDeleteFileEvent(loop, fd, mask);
@@ -25,7 +25,6 @@ void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
     memset(buffer, 0x00, sizeof(char) * buffer_size);
     int size;
     size = read(fd, buffer, buffer_size);
-  
     if (size <= 0)
     {
       printf("Client disconnected\n");
