@@ -32,6 +32,9 @@
 
 #ifdef __APPLE__
 #include <AvailabilityMacros.h>
+#if defined(__APPLE__) && defined(MAC_OS_X_VERSION_MAX_ALLOWED) && MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+#define MAC_OS_10_6_DETECTED
+#endif
 #endif
 
 /* Test for polling API */
@@ -39,7 +42,12 @@
 #define HAVE_EPOLL 1
 #endif
 
-#if (defined(__APPLE__) && defined(MAC_OS_X_VERSION_10_6)) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined (__NetBSD__)
+/* Test for accept4() */
+#ifdef __linux__
+#define HAVE_ACCEPT4 1
+#endif
+
+#if (defined(__APPLE__) && defined(MAC_OS_10_6_DETECTED)) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined (__NetBSD__)
 #define HAVE_KQUEUE 1
 #endif
 
@@ -50,5 +58,29 @@
 #endif
 #endif
 
+/* Test for SO_MARK / SO_USER_COOKIE / SO_RTABLE (anetSetSockMarkId) */
+#ifdef __linux__
+#include <sys/socket.h>
+#if defined(SO_MARK)
+#define HAVE_SOCKOPTMARKID 1
+#define SOCKOPTMARKID SO_MARK
+#endif
+#endif
+
+#if defined(__FreeBSD__)
+#include <sys/socket.h>
+#if defined(SO_USER_COOKIE)
+#define HAVE_SOCKOPTMARKID 1
+#define SOCKOPTMARKID SO_USER_COOKIE
+#endif
+#endif
+
+#if defined(__OpenBSD__)
+#include <sys/socket.h>
+#if defined(SO_RTABLE)
+#define HAVE_SOCKOPTMARKID 1
+#define SOCKOPTMARKID SO_RTABLE
+#endif
+#endif
 
 #endif

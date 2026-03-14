@@ -1,4 +1,4 @@
-SRC = src/ae.c src/anet.c
+SRC = src/ae.c src/anet.c src/monotonic.c
 OBJ = ${SRC:.c=.o}
 CFLAGS = -Wno-parentheses -Wno-switch-enum -Wno-unused-value
 
