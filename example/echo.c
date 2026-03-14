@@ -1,75 +1,72 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "../src/ae.h"
 #include "../src/anet.h"
 
-void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
+#define BUFFER_SIZE 1024
+
+void closeClient(aeEventLoop *loop, int fd)
 {
-    char *buffer = clientdata;
-    printf("recv client [%d] data: %s\n", fd, buffer);
-    write(fd, buffer, strlen(buffer));
-    free(buffer);
-    aeDeleteFileEvent(loop, fd, mask);
+    aeDeleteFileEvent(loop, fd, AE_READABLE);
+    close(fd);
 }
 
-void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
+void readFromClient(aeEventLoop *loop, int fd, void *clientData, int mask)
 {
-    int buffer_size = 1024;
-    char *buffer = calloc(buffer_size, sizeof(char));
-    int size;
-    size = read(fd, buffer, buffer_size);
-    if (size <= 0)
-    {
-      printf("Client disconnected\n");
-      free(buffer);
-      aeDeleteFileEvent(loop, fd, AE_READABLE);
-      return; 
+    char buffer[BUFFER_SIZE];
+    ssize_t size;
+
+    AE_NOTUSED(clientData);
+    AE_NOTUSED(mask);
+
+    size = read(fd, buffer, sizeof(buffer));
+    if (size <= 0) {
+        printf("Client disconnected\n");
+        closeClient(loop, fd);
+        return;
     }
-    aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
+
+    printf("recv client [%d] data: ", fd);
+    fwrite(buffer, 1, (size_t)size, stdout);
+    if (buffer[size - 1] != '\n') {
+        putchar('\n');
+    }
+    write(fd, buffer, (size_t)size);
 }
 
-void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
+void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientData, int mask)
 {
     int client_port, client_fd;
     char client_ip[128];
-    // create client socket
-    client_fd = anetTcpAccept(NULL, fd, client_ip, 128, &client_port);
+
+    AE_NOTUSED(clientData);
+    AE_NOTUSED(mask);
+
+    client_fd = anetTcpAccept(NULL, fd, client_ip, sizeof(client_ip), &client_port);
+    if (client_fd == ANET_ERR) {
+        return;
+    }
+
     printf("Accepted %s:%d\n", client_ip, client_port);
-
-    // set client socket non-block
-    anetNonBlock(NULL, client_fd);
-
-    // regist on message callback
-    int ret;
-    ret = aeCreateFileEvent(loop, client_fd, AE_READABLE, readFromClient, NULL);
-    assert(ret != AE_ERR);
+    assert(aeCreateFileEvent(loop, client_fd, AE_READABLE, readFromClient, NULL) != AE_ERR);
 }
 
-int main()
+int main(void)
 {
-    int ipfd;
-    // create server socket
-    ipfd = anetTcpServer(NULL, 8000, "0.0.0.0", 0);
-    assert(ipfd != ANET_ERR);
-
-    // create main event loop
+    int server_fd;
     aeEventLoop *loop;
+
+    server_fd = anetTcpServer(NULL, 8000, "localhost", 0);
+    assert(server_fd != ANET_ERR);
+
     loop = aeCreateEventLoop(1024);
+    assert(loop != NULL);
 
-    // regist socket connect callback
-    int ret;
-    ret = aeCreateFileEvent(loop, ipfd, AE_READABLE, acceptTcpHandler, NULL);
-    assert(ret != AE_ERR);
-
-    // start main loop
+    assert(aeCreateFileEvent(loop, server_fd, AE_READABLE, acceptTcpHandler, NULL) != AE_ERR);
     aeMain(loop);
-
-    // stop loop
     aeDeleteEventLoop(loop);
-
     return 0;
 }
