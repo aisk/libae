@@ -1,20 +1,34 @@
-SRC = src/ae.c src/anet.c src/monotonic.c
-OBJ = ${SRC:.c=.o}
-CFLAGS = -Wno-parentheses -Wno-switch-enum -Wno-unused-value
+SRC := src/ae.c src/anet.c src/monotonic.c
+OBJ := $(SRC:.c=.o)
+DEP := $(OBJ:.o=.d)
+EXAMPLES := timer echo
+EXAMPLE_OBJ := $(EXAMPLES:%=example/%.o)
+EXAMPLE_DEP := $(EXAMPLE_OBJ:.o=.d)
+WARNINGS := -Wno-parentheses -Wno-switch-enum -Wno-unused-value
+
+CFLAGS ?=
+CPPFLAGS ?=
+LDFLAGS ?=
+LDLIBS ?=
+ARFLAGS ?= -rc
+
+all: libae.a $(EXAMPLES)
 
 libae.a: $(OBJ)
-	$(AR) -rc $@ $(OBJ)
-
-%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(AR) $(ARFLAGS) $@ $(OBJ)
 
 timer: example/timer.o libae.a
-	$(CC) $^ -o $@
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 echo: example/echo.o libae.a
-	$(CC) $^ -o $@
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(WARNINGS) -MMD -MP -c $< -o $@
 
 clean:
-	rm -f $(OBJ) libae.a example/timer.o timer example/echo.o echo
+	$(RM) $(OBJ) $(DEP) libae.a $(EXAMPLE_OBJ) $(EXAMPLE_DEP) $(EXAMPLES)
 
-.PHONY: clean
+.PHONY: all clean
+
+-include $(DEP) $(EXAMPLE_DEP)
