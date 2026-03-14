@@ -1,105 +1,83 @@
 # libae
 
-Redis's async event library, you can use it in your projects.
+Redis's async event library, extracted as a small reusable C library. This copy is taken from Redis 7.2, the last Redis release still distributed under the BSD license.
 
-## supported event multiplexing model
+## Supported Event Multiplexing Models
 
 * `epoll`
 * `kqueue`
-* `ev_port`
+* `evport`
 * `select`
 
-## Example
+The backend is selected at compile time according to platform support.
+
+## Build
+
+Build the static library:
+
+```sh
+make libae.a
+```
+
+Build the bundled examples:
+
+```sh
+make timer
+make echo
+```
+
+Build everything:
+
+```sh
+make all
+```
+
+Clean generated files:
+
+```sh
+make clean
+```
+
+## Examples
 
 ### Timer
 
-Print `Hello, World` on screen every 10 seconds:
+The timer example registers multiple time events and prints a message roughly once per second:
 
-```C
-int print(struct aeEventLoop *loop, long long id, void *clientData)
-{
-    printf("%lld - Hello, World\n", id);
-    return -1;
-}
-
-int main(void)
-{
-    aeEventLoop *loop = aeCreateEventLoop(0);
-    int i;
-    for (i = 0; i < 10; i ++) {
-        aeCreateTimeEvent(loop, i*1000, print, NULL, NULL);
-    }
-    aeMain(loop);
-    aeDeleteEventLoop(loop);
-    return 0;
-}
+```sh
+make timer
+./timer
 ```
 
-### Echo server
+See [example/timer.c](example/timer.c) for the full source.
 
-Start an echo server on 8000:
+### Echo Server
 
-```C
-void writeToClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
-{
-    char *buffer = clientdata;
-    printf("%p\n", clientdata);
-    write(fd, buffer, strlen(buffer));
-    free(buffer);
-    aeDeleteFileEvent(loop, fd, AE_WRITABLE);
-}
+The echo example starts a TCP server on port `8000`:
 
-void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
-{
-    int buffer_size = 1024;
-    char *buffer = malloc(sizeof(char) * buffer_size);
-    bzero(buffer, buffer_size);
-    int size;
-    size = read(fd, buffer, buffer_size);
-    aeCreateFileEvent(loop, fd, AE_WRITABLE, writeToClient, buffer);
-}
-
-void acceptTcpHandler(aeEventLoop *loop, int fd, void *clientdata, int mask)
-{
-    int client_port, client_fd;
-    char client_ip[128];
-    // create client socket
-    client_fd = anetTcpAccept(NULL, fd, client_ip, 128, &client_port);
-    printf("Accepted %s:%d\n", client_ip, client_port);
-
-    // set client socket non-block
-    anetNonBlock(NULL, client_fd);
-
-    // regist on message callback
-    int ret;
-    ret = aeCreateFileEvent(loop, client_fd, AE_READABLE, readFromClient, NULL);
-    assert(ret != AE_ERR);
-}
-
-int main()
-{
-    int ipfd;
-    // create server socket
-    ipfd = anetTcpServer(NULL, 8000, "0.0.0.0", 0);
-    assert(ipfd != ANET_ERR);
-
-    // create main event loop
-    aeEventLoop *loop;
-    loop = aeCreateEventLoop(1024);
-
-    // regist socket connect callback
-    int ret;
-    ret = aeCreateFileEvent(loop, ipfd, AE_READABLE, acceptTcpHandler, NULL);
-    assert(ret != AE_ERR);
-
-    // start main loop
-    aeMain(loop);
-
-    // stop loop
-    aeDeleteEventLoop(loop);
-
-    return 0;
-}
+```sh
+make echo
+./echo
 ```
 
-[original document](http://redis.io/topics/internals-rediseventlib)
+Then connect from another terminal:
+
+```sh
+nc 127.0.0.1 8000
+```
+
+See [example/echo.c](example/echo.c) for the full source.
+
+## Source Layout
+
+* `src/ae.c` and `src/ae.h`: core event loop implementation and public API
+* `src/anet.c` and `src/anet.h`: networking helpers
+* `src/monotonic.c` and `src/monotonic.h`: monotonic clock helpers
+* `src/ae_epoll.c`, `src/ae_kqueue.c`, `src/ae_evport.c`, `src/ae_select.c`: backend-specific pollers
+* `example/`: runnable examples
+
+## Notes
+
+This repository currently builds a static library (`libae.a`) and two example binaries (`timer`, `echo`).
+
+[Original document](http://redis.io/topics/internals-rediseventlib)
