@@ -1,35 +1,42 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <stdlib.h>
 
 #include "../src/ae.h"
 
-#define BUFF_SIZE 512
-
-void freeClientData(struct aeEventLoop *eventLoop, void *clientData)
-{
-    if(NULL != clientData)
-        free(clientData);
-}
+#define EVENT_COUNT 8
+typedef struct timerState {
+    int count;
+} timerState;
 
 int print(struct aeEventLoop *loop, long long id, void *clientData)
 {
-    printf("event %lld - %s\n", id, (const char *)clientData);
-    return -1;
+    timerState *state = clientData;
+
+    AE_NOTUSED(id);
+    printf("event %d - Hello World %d\n", state->count, state->count);
+
+    state->count++;
+    if (state->count == EVENT_COUNT) {
+        aeStop(loop);
+        return AE_NOMORE;
+    }
+
+    return 1000;
 }
 
 int main(void)
 {
     aeEventLoop *loop = aeCreateEventLoop(10);
-    int i;
-    for (i = 1; i < 10; i ++) {
-        char *eventData = calloc(BUFF_SIZE, sizeof(char));
-        if (NULL != eventData)
-        {
-            sprintf(eventData, "Hello World %d", i);
-            aeCreateTimeEvent(loop, i*1000, print, eventData, freeClientData);
-        }
+    if (loop == NULL) {
+        return 1;
     }
+
+    timerState state = {0};
+    if (aeCreateTimeEvent(loop, 1000, print, &state, NULL) == AE_ERR) {
+        aeDeleteEventLoop(loop);
+        return 1;
+    }
+
     aeMain(loop);
     aeDeleteEventLoop(loop);
     return 0;
