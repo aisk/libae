@@ -19,11 +19,25 @@ Build the static library:
 make libae.a
 ```
 
+Build the static library with CMake:
+
+```sh
+cmake -S . -B build
+cmake --build build --target ae
+```
+
 Build the bundled examples:
 
 ```sh
 make timer
 make echo
+```
+
+Build the bundled examples with CMake:
+
+```sh
+cmake -S . -B build
+cmake --build build
 ```
 
 Build everything:
@@ -36,6 +50,14 @@ Clean generated files:
 
 ```sh
 make clean
+```
+
+Install the library and exported CMake target files:
+
+```sh
+cmake -S . -B build
+cmake --build build
+cmake --install build
 ```
 
 ## Examples
